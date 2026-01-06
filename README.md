@@ -27,6 +27,50 @@ node dist/cli.js routing place <sendungsnummer> --preset vor-der-wohnungstuer --
 node dist/cli.js routing place-options
 ```
 
+### Sample output
+
+Login
+```text
+Logged in as you@example.com
+```
+
+Deliveries
+```text
+Status: IV (In Verteilung) (in progress)
+  1042348411302810212306  ETA: 2026-01-07 – 2026-01-08  from AMAZON
+  1000265501074370110700  ETA: 2026-01-07 – 2026-01-08  from AllesPost
+
+Status: ZU (Zugestellt) (delivered)
+  1040906472585010212306  ETA: 2026-01-06T00:00:00  from AMAZON
+```
+
+Delivery details
+```text
+Tracking: 1042348411302810212306
+Expected: 2026-01-07 – 2026-01-08
+Sender: AMAZON
+Status: IV
+Picture: https://...
+```
+
+Place options
+```text
+Vor_Haustüre  Vor der Haustüre
+Vor_Wohnungstüre  Vor der Wohnungstüre
+AufOderUnter_Briefkasten  Unter / Auf dem Briefkasten
+Hinter_Zaun  Hinter dem Zaun
+In_Garage  In der Garage
+Auf_Terrasse  Auf der Terrasse
+Im_Carport  Im Carport
+In_Flexbox  In der Flexbox
+sonstige  Anderer Wunsch‑Platz
+```
+
+Set place redirection
+```text
+Set delivery place for 1042348411302810212306 to: Vor der Wohnungstüre
+```
+
 ## Environment variables
 - `POST_AT_USERNAME`: your post.at login email
 - `POST_AT_PASSWORD`: your post.at password
