@@ -61,7 +61,7 @@ program
   .version("0.1.0");
 
 const PLACE_PRESETS: Record<string, string> = {
-  "vor-der-wohnungstuer": "Vor der Wohnungstür"
+  "vor-der-wohnungstuer": "Vor_Wohnungstüre"
 };
 
 program
@@ -194,23 +194,47 @@ routing
         username: opts.username,
         password: opts.password
       });
-      let place = opts.place || (opts.preset && PLACE_PRESETS[opts.preset]);
-      if (!place && opts.key) {
+      const presetKey = opts.preset ? PLACE_PRESETS[opts.preset] : undefined;
+      let key: string | undefined = opts.key || presetKey;
+      let label: string | undefined = opts.place;
+
+      if (!key || !label) {
         const options = await fetchPlaceOptions();
-        const match = options.find((opt) => opt.key === opts.key);
-        place = match?.label;
+        if (!key && label) {
+          const match = options.find((opt) => opt.label === label);
+          if (match) {
+            key = match.key;
+            label = match.label;
+          }
+        }
+        if (!label && key) {
+          const match = options.find((opt) => opt.key === key);
+          if (match) {
+            label = match.label;
+          }
+        }
       }
-      if (!place) {
+
+      if (!key && label) {
+        key = label;
+      }
+
+      if (!key) {
         throw new Error(
           "Missing place label. Provide --place, --key, or --preset (e.g. vor-der-wohnungstuer)."
         );
       }
 
-      const ok = await setPlaceRedirection(token, sendungsnummer, place, opts.description || "");
+      const ok = await setPlaceRedirection(token, sendungsnummer, key, opts.description || "");
       if (!ok) {
-        throw new Error("Redirection request was not accepted.");
+        const detail = await fetchSendungDetail(token, sendungsnummer);
+        const allowed = detail?.possibleRedirectionsNoDepositories?.abstellort;
+        const reason = allowed
+          ? "The request was rejected by the API."
+          : "This shipment does not allow Wunschplatz (abstellort) at the moment.";
+        throw new Error(`Redirection request was not accepted. ${reason}`);
       }
-      console.log(`Set delivery place for ${sendungsnummer} to: ${place}`);
+      console.log(`Set delivery place for ${sendungsnummer} to: ${label ?? key}`);
     } catch (error) {
       console.error(error instanceof Error ? error.message : error);
       process.exitCode = 1;

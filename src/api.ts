@@ -15,6 +15,17 @@ export interface SendungSummary {
     startTime?: string;
     endTime?: string;
   };
+  possibleRedirectionsNoDepositories?: {
+    abholstation?: boolean;
+    abstellort?: boolean;
+    datum?: boolean;
+    filliale?: boolean;
+    nachbar?: boolean;
+    zustelldatum?: boolean;
+    branchesParcelLocker?: string[];
+    branchesPostOffice?: string[];
+    redirectionAreaCode?: string;
+  };
   hasNewFlag?: boolean;
 }
 
