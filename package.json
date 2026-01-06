@@ -1,0 +1,26 @@
+{
+  "name": "post-at-cli",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "post-at": "dist/cli.js"
+  },
+  "scripts": {
+    "dev": "tsx src/cli.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/cli.js"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "fetch-cookie": "^3.1.0",
+    "tough-cookie": "^4.1.4",
+    "undici": "^6.21.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.12",
+    "@types/tough-cookie": "^4.0.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
