@@ -7,7 +7,12 @@ export const CONFIG = {
   sendungenScope: "https://login.post.at/sendungenapi-prod/Sendungen.All",
   redirectUriInteractive: "https://www.post.at/signin-oidc",
   redirectUriToken: "https://www.post.at",
-  graphqlAuthenticated: "https://api.post.at/sendungen/sv/graphqlAuthenticated"
+  graphqlAuthenticated: "https://api.post.at/sendungen/sv/graphqlAuthenticated",
+  sitecoreGraphqlEndpoint: "https://api.www.post.at/postat/xp-v10/sitecore/api/graphql/master",
+  sitecoreApiKey: "{F6982A9B-F4EC-4663-9F6B-D51284D4F322}",
+  sitecoreLang: "de-AT",
+  sendungsumleitungenPath:
+    "/sitecore/content/PostAG/PostAT/Einstellungen/App Konfigurationen/Sending Settings/Sendungsumleitungen"
 } as const;
 
 export const ENV = {

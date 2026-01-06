@@ -9,6 +9,7 @@ import {
   formatSendungList,
   isUpcoming
 } from "./format.js";
+import { fetchPlaceOptions } from "./sitecore.js";
 import { isSessionValid, loadSession, saveSession } from "./session.js";
 
 function getEnv(name: string): string | undefined {
@@ -146,13 +147,40 @@ program
     }
   });
 
-program
+const routing = program
   .command("routing")
-  .description("Manage delivery routing options")
+  .description("Manage delivery routing options");
+
+routing
+  .command("place-options")
+  .description("List available delivery place options (Wunschplatz)")
+  .option("--json", "output raw JSON")
+  .action(async (opts) => {
+    try {
+      const options = await fetchPlaceOptions();
+      if (options.length === 0) {
+        console.log("No place options found.");
+        return;
+      }
+      if (opts.json) {
+        console.log(JSON.stringify(options, null, 2));
+        return;
+      }
+      for (const option of options) {
+        console.log(`${option.key}  ${option.label}`);
+      }
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : error);
+      process.exitCode = 1;
+    }
+  });
+
+routing
   .command("place")
   .description("Set delivery place redirection (Wunschplatz)")
   .argument("<sendungsnummer>", "tracking number")
   .option("--place <label>", "place option label (as shown on post.at)")
+  .option("--key <key>", "place option key (see routing place-options)")
   .option("--description <text>", "free-text description", "")
   .option(
     "--preset <preset>",
@@ -166,10 +194,15 @@ program
         username: opts.username,
         password: opts.password
       });
-      const place = opts.place || (opts.preset && PLACE_PRESETS[opts.preset]);
+      let place = opts.place || (opts.preset && PLACE_PRESETS[opts.preset]);
+      if (!place && opts.key) {
+        const options = await fetchPlaceOptions();
+        const match = options.find((opt) => opt.key === opts.key);
+        place = match?.label;
+      }
       if (!place) {
         throw new Error(
-          "Missing place label. Provide --place or --preset (e.g. vor-der-wohnungstuer)."
+          "Missing place label. Provide --place, --key, or --preset (e.g. vor-der-wohnungstuer)."
         );
       }
 

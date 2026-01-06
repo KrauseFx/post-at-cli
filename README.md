@@ -24,11 +24,35 @@ node dist/cli.js deliveries
 node dist/cli.js deliveries --all
 node dist/cli.js delivery <sendungsnummer>
 node dist/cli.js routing place <sendungsnummer> --preset vor-der-wohnungstuer --description "If possible, please leave at the door"
+node dist/cli.js routing place-options
 ```
 
 ## Environment variables
 - `POST_AT_USERNAME`: your post.at login email
 - `POST_AT_PASSWORD`: your post.at password
+
+## Delivery place options (Wunschplatz)
+List the current options from post.at:
+
+```bash
+node dist/cli.js routing place-options
+```
+
+Known options (may change):
+- `Vor_Haustüre` — Vor der Haustüre
+- `Vor_Wohnungstüre` — Vor der Wohnungstüre
+- `AufOderUnter_Briefkasten` — Unter / Auf dem Briefkasten
+- `Hinter_Zaun` — Hinter dem Zaun
+- `In_Garage` — In der Garage
+- `Auf_Terrasse` — Auf der Terrasse
+- `Im_Carport` — Im Carport
+- `In_Flexbox` — In der Flexbox
+- `sonstige` — Anderer Wunsch‑Platz
+
+You can use a key directly:
+```bash
+node dist/cli.js routing place <sendungsnummer> --key Vor_Wohnungstüre --description "Bitte vor die Wohnungstür"
+```
 
 ## Disclaimer / Non‑Affiliation
 This project is **not affiliated with, endorsed by, or sponsored by** Österreichische Post AG or post.at in any way.
