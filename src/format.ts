@@ -48,17 +48,54 @@ export function formatSendungList(items: SendungSummary[]): string {
   if (items.length === 0) {
     return "No deliveries found.";
   }
-  return items
-    .map(item => {
+
+  const grouped = new Map<string, SendungSummary[]>();
+  for (const item of items) {
+    const key = item.status ? item.status.toUpperCase() : "UNKNOWN";
+    const list = grouped.get(key) ?? [];
+    list.push(item);
+    grouped.set(key, list);
+  }
+
+  const sortKey = (item: SendungSummary): number => {
+    const delivery = item.estimatedDelivery;
+    const date = delivery?.startDate || delivery?.endDate;
+    if (!date) return Number.POSITIVE_INFINITY;
+    const hasTime = date.includes("T");
+    const time = delivery?.startTime || "";
+    const iso = hasTime ? date : `${date}T${time || "00:00:00"}`;
+    const ts = Date.parse(iso);
+    return Number.isNaN(ts) ? Number.POSITIVE_INFINITY : ts;
+  };
+
+  const groupKeys = Array.from(grouped.keys()).sort((a, b) => {
+    const deliveredA = isDeliveredStatus(a) ? 1 : 0;
+    const deliveredB = isDeliveredStatus(b) ? 1 : 0;
+    if (deliveredA !== deliveredB) return deliveredA - deliveredB;
+    const labelA = formatStatus(a);
+    const labelB = formatStatus(b);
+    return labelA.localeCompare(labelB);
+  });
+
+  const lines: string[] = [];
+  for (const key of groupKeys) {
+    const group = grouped.get(key) ?? [];
+    const label = key === "UNKNOWN" ? "unknown" : formatStatus(key);
+    const delivered = isDeliveredStatus(key) ? "delivered" : "in progress";
+    lines.push(`Status: ${label} (${delivered})`);
+
+    group.sort((a, b) => sortKey(a) - sortKey(b));
+    for (const item of group) {
       const expected = formatEstimatedDelivery(item.estimatedDelivery);
       const sender = item.sender ? `from ${item.sender}` : "";
-      const status = item.status ? `status=${formatStatus(item.status)}` : "status=unknown";
-      const delivered = isDeliveredStatus(item.status) ? "delivered" : "in progress";
       const eta = expected ? `ETA: ${expected}` : "ETA: —";
-      const details = [eta, status, delivered, sender].filter(Boolean).join("  ");
-      return `${item.sendungsnummer}  ${details}`;
-    })
-    .join("\n");
+      const details = [eta, sender].filter(Boolean).join("  ");
+      lines.push(`  ${item.sendungsnummer}  ${details}`);
+    }
+    lines.push("");
+  }
+
+  return lines.join("\n").trim();
 }
 
 export function extractPictureUrl(detail: SendungDetail): string | null {
