@@ -24,7 +24,6 @@ node dist/cli.js deliveries
 node dist/cli.js deliveries --all
 node dist/cli.js delivery <sendungsnummer>
 node dist/cli.js routing place <sendungsnummer> --preset vor-der-wohnungstuer --description "If possible, please leave at the door"
-node dist/cli.js routing place-options
 ```
 
 ### Sample output
@@ -53,23 +52,6 @@ Status: IV
 Picture: https://...
 ```
 
-Place options
-```text
-Vor_Haustüre  Vor der Haustüre
-Vor_Wohnungstüre  Vor der Wohnungstüre
-AufOderUnter_Briefkasten  Unter / Auf dem Briefkasten
-Hinter_Zaun  Hinter dem Zaun
-In_Garage  In der Garage
-Auf_Terrasse  Auf der Terrasse
-Im_Carport  Im Carport
-In_Flexbox  In der Flexbox
-sonstige  Anderer Wunsch‑Platz
-```
-
-Set place redirection
-```text
-Set delivery place for 1042348411302810212306 to: Vor der Wohnungstüre
-```
 
 ## Environment variables
 - `POST_AT_USERNAME`: your post.at login email
