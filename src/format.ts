@@ -22,6 +22,28 @@ export function formatEstimatedDelivery(delivery?: {
   return timePart ? `${datePart} (${timePart})` : datePart;
 }
 
+const STATUS_LABELS: Record<string, string> = {
+  ZU: "Zugestellt",
+  ZUGESTELLT: "Zugestellt",
+  IV: "In Verteilung",
+  AV: "Avisiert",
+  RE: "Retour",
+  RUECKSENDUNG: "Ruecksendung"
+};
+
+export function isDeliveredStatus(status?: string): boolean {
+  if (!status) return false;
+  const normalized = status.toUpperCase();
+  return normalized === "ZU" || normalized === "ZUGESTELLT";
+}
+
+export function formatStatus(status?: string): string {
+  if (!status) return "unknown";
+  const key = status.toUpperCase();
+  const label = STATUS_LABELS[key];
+  return label ? `${status} (${label})` : status;
+}
+
 export function formatSendungList(items: SendungSummary[]): string {
   if (items.length === 0) {
     return "No deliveries found.";
@@ -30,9 +52,11 @@ export function formatSendungList(items: SendungSummary[]): string {
     .map(item => {
       const expected = formatEstimatedDelivery(item.estimatedDelivery);
       const sender = item.sender ? `from ${item.sender}` : "";
-      const status = item.status ? `status=${item.status}` : "";
-      const details = [sender, status].filter(Boolean).join(" ");
-      return `${item.sendungsnummer}  ${expected}${details ? "  " + details : ""}`;
+      const status = item.status ? `status=${formatStatus(item.status)}` : "status=unknown";
+      const delivered = isDeliveredStatus(item.status) ? "delivered" : "in progress";
+      const eta = expected ? `ETA: ${expected}` : "ETA: —";
+      const details = [eta, status, delivered, sender].filter(Boolean).join("  ");
+      return `${item.sendungsnummer}  ${details}`;
     })
     .join("\n");
 }
