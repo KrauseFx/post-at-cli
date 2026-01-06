@@ -33,6 +33,14 @@ export interface SendungDetail extends SendungSummary {
   }>;
 }
 
+function escapeGraphQLString(value: string): string {
+  return value
+    .replace(/\\/g, "\\\\")
+    .replace(/\"/g, "\\\"")
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r");
+}
+
 function buildSendungenQuery(
   elementCount: number,
   sortByDate: SortDirection,
@@ -141,8 +149,9 @@ function buildSendungenQuery(
 }
 
 function buildSendungDetailQuery(sendungsnummer: string): string {
+  const safeSnr = escapeGraphQLString(sendungsnummer);
   return `query {
-    einzelsendung(sendungsnummer: "${sendungsnummer}") {
+    einzelsendung(sendungsnummer: "${safeSnr}") {
       sendungsnummer
       externalIdentityCode
       branchkey
@@ -285,4 +294,25 @@ export async function fetchSendungDetail(
   const query = buildSendungDetailQuery(sendungsnummer);
   const data = await graphqlRequest<{ einzelsendung: SendungDetail }>(token, query);
   return data.einzelsendung;
+}
+
+export async function setPlaceRedirection(
+  token: string,
+  sendungsnummer: string,
+  place: string,
+  description: string
+): Promise<boolean> {
+  const safeSnr = escapeGraphQLString(sendungsnummer);
+  const safePlace = escapeGraphQLString(place);
+  const safeDescription = escapeGraphQLString(description);
+  const mutation = `mutation {
+  setPlaceRedirection(redirection: {
+    abstellort: "${safePlace}"
+    beschreibung: "${safeDescription}"
+    sendungsnummer: "${safeSnr}"
+  })
+}`;
+
+  const data = await graphqlRequest<{ setPlaceRedirection?: boolean }>(token, mutation);
+  return Boolean(data.setPlaceRedirection);
 }

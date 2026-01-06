@@ -2,7 +2,7 @@
 import { Command } from "commander";
 import { login } from "./auth.js";
 import { ENV } from "./config.js";
-import { fetchSendungen, fetchSendungDetail } from "./api.js";
+import { fetchSendungen, fetchSendungDetail, setPlaceRedirection } from "./api.js";
 import {
   extractPictureUrl,
   formatEstimatedDelivery,
@@ -58,6 +58,10 @@ program
   .name("post-at")
   .description("CLI for post.at deliveries")
   .version("0.1.0");
+
+const PLACE_PRESETS: Record<string, string> = {
+  "vor-der-wohnungstuer": "Vor der Wohnungstür"
+};
 
 program
   .command("login")
@@ -136,6 +140,44 @@ program
       console.log(`Sender: ${detail.sender || "—"}`);
       console.log(`Status: ${detail.status || "—"}`);
       console.log(`Picture: ${picture || "—"}`);
+    } catch (error) {
+      console.error(error instanceof Error ? error.message : error);
+      process.exitCode = 1;
+    }
+  });
+
+program
+  .command("routing")
+  .description("Manage delivery routing options")
+  .command("place")
+  .description("Set delivery place redirection (Wunschplatz)")
+  .argument("<sendungsnummer>", "tracking number")
+  .option("--place <label>", "place option label (as shown on post.at)")
+  .option("--description <text>", "free-text description", "")
+  .option(
+    "--preset <preset>",
+    `shortcut for place label (${Object.keys(PLACE_PRESETS).join(", ")})`
+  )
+  .option("--username <email>", "login email")
+  .option("--password <password>", "login password")
+  .action(async (sendungsnummer, opts) => {
+    try {
+      const { token } = await getAccessToken({
+        username: opts.username,
+        password: opts.password
+      });
+      const place = opts.place || (opts.preset && PLACE_PRESETS[opts.preset]);
+      if (!place) {
+        throw new Error(
+          "Missing place label. Provide --place or --preset (e.g. vor-der-wohnungstuer)."
+        );
+      }
+
+      const ok = await setPlaceRedirection(token, sendungsnummer, place, opts.description || "");
+      if (!ok) {
+        throw new Error("Redirection request was not accepted.");
+      }
+      console.log(`Set delivery place for ${sendungsnummer} to: ${place}`);
     } catch (error) {
       console.error(error instanceof Error ? error.message : error);
       process.exitCode = 1;

@@ -1,11 +1,12 @@
 # post-at-cli
 
-Unofficial CLI for viewing deliveries on post.at. Uses the same web flows as the site (Azure AD B2C + GraphQL) and requires your own account credentials.
+Unofficial CLI for viewing deliveries on post.at. Uses the same web flows as the site and requires your own account credentials.
 
 ## Features
 - Login (short‑lived session caching)
 - List deliveries (upcoming by default)
 - Delivery details (expected date, sender, tracking number, picture URL when available)
+- Set delivery place redirection (Wunschplatz)
 
 ## Install
 ```bash
@@ -22,6 +23,7 @@ node dist/cli.js login
 node dist/cli.js deliveries
 node dist/cli.js deliveries --all
 node dist/cli.js delivery <sendungsnummer>
+node dist/cli.js routing place <sendungsnummer> --preset vor-der-wohnungstuer --description "If possible, please leave at the door"
 ```
 
 ## Environment variables
