@@ -85,8 +85,9 @@ program
 
 program
   .command("deliveries")
-  .description("List upcoming deliveries")
-  .option("--all", "include delivered/expired items")
+  .description("List deliveries")
+  .option("--all", "include delivered/expired items (deprecated: use --status all)")
+  .option("--status <type>", "filter by status: pending, delivered, or all (default)", "all")
   .option("--limit <count>", "number of entries to request", "50")
   .option("--json", "output raw JSON")
   .option("--username <email>", "login email")
@@ -99,7 +100,29 @@ program
       });
       const limit = Number(opts.limit) || 50;
       const sendungen = await fetchSendungen(token, limit);
-      const filtered = opts.all ? sendungen : sendungen.filter(isUpcoming);
+      
+      // Determine filter mode
+      let statusFilter = opts.status?.toLowerCase() || "all";
+      if (opts.all) {
+        // Backwards compatibility: --all overrides --status
+        statusFilter = "all";
+      }
+
+      // Validate status filter
+      if (!["pending", "delivered", "all"].includes(statusFilter)) {
+        throw new Error(`Invalid --status value: ${opts.status}. Use: pending, delivered, or all`);
+      }
+
+      // Apply filtering
+      let filtered: typeof sendungen;
+      if (statusFilter === "all") {
+        filtered = sendungen;
+      } else if (statusFilter === "delivered") {
+        filtered = sendungen.filter(s => s.status && s.status.toUpperCase() === "ZU");
+      } else {
+        // pending: exclude delivered (ZU) status
+        filtered = sendungen.filter(s => !s.status || s.status.toUpperCase() !== "ZU");
+      }
 
       if (opts.json) {
         console.log(JSON.stringify(filtered, null, 2));
