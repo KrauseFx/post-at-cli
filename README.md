@@ -20,8 +20,9 @@ export POST_AT_USERNAME="you@example.com"
 export POST_AT_PASSWORD="your-password"
 
 node dist/cli.js login
-node dist/cli.js deliveries
-node dist/cli.js deliveries --all
+node dist/cli.js deliveries                           # all deliveries (default)
+node dist/cli.js deliveries --status pending          # pending only
+node dist/cli.js deliveries --status delivered        # delivered only
 node dist/cli.js delivery <sendungsnummer>
 node dist/cli.js routing place <sendungsnummer> --preset vor-der-wohnungstuer --description "If possible, please leave at the door"
 ```
